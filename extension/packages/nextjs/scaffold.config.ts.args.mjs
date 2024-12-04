@@ -1,1 +1,1 @@
-export const chainName = `[optimsim]`
+export const chainName = `optimism`
