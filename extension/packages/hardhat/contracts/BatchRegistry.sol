@@ -12,8 +12,8 @@ contract BatchRegistry is Ownable {
     mapping(address => bool) public allowList;
     mapping(address => address) public yourContractAddress;
     mapping(address => uint256) public graduatedTokenId;
+    mapping(address => bool) public graduationAllowList;
     bool public isOpen = true;
-    bool public graduationOpen = false;
     uint256 public checkedInCounter;
 
     event CheckedIn(bool first, address builder, address checkInContract);
@@ -24,7 +24,7 @@ contract BatchRegistry is Ownable {
     error NotInAllowList();
     error AlreadyGraduated();
     error NotCheckedIn();
-    error GraduationClosed();
+    error NotInGraduationAllowList();
 
     modifier batchIsOpen() {
         if (!isOpen) revert BatchNotOpen();
@@ -49,12 +49,16 @@ contract BatchRegistry is Ownable {
         }
     }
 
-    function toggleBatchOpenStatus() public onlyOwner {
-        isOpen = !isOpen;
+    function updateGraduationAllowList(address[] calldata builders, bool[] calldata statuses) public onlyOwner {
+        require(builders.length == statuses.length, "Builders and statuses length mismatch");
+
+        for (uint256 i = 0; i < builders.length; i++) {
+            graduationAllowList[builders[i]] = statuses[i];
+        }
     }
 
-    function toggleGraduationOpenStatus() public onlyOwner {
-        graduationOpen = !graduationOpen;
+    function toggleBatchOpenStatus() public onlyOwner {
+        isOpen = !isOpen;
     }
 
     function checkIn() public senderIsContract batchIsOpen {
@@ -64,7 +68,7 @@ contract BatchRegistry is Ownable {
         if (yourContractAddress[tx.origin] == address(0)) {
             checkedInCounter++;
             wasFirstTime = true;
-            (bool success, ) = tx.origin.call{ value: CHECK_IN_REWARD }("");
+            (bool success,) = tx.origin.call{value: CHECK_IN_REWARD}("");
             require(success, "Failed to send check in reward");
         }
 
@@ -73,9 +77,9 @@ contract BatchRegistry is Ownable {
     }
 
     function graduate() public {
-        if (!graduationOpen) revert GraduationClosed();
         if (graduatedTokenId[msg.sender] != 0) revert AlreadyGraduated();
         if (yourContractAddress[msg.sender] == address(0)) revert NotCheckedIn();
+        if (!graduationAllowList[msg.sender]) revert NotInGraduationAllowList();
 
         uint256 newTokenId = batchGraduationNFT.mint(msg.sender);
         graduatedTokenId[msg.sender] = newTokenId;
@@ -83,7 +87,7 @@ contract BatchRegistry is Ownable {
 
     // Withdraw function for admins in case some builders don't end up checking in
     function withdraw() public onlyOwner {
-        (bool success, ) = payable(owner()).call{ value: address(this).balance }("");
+        (bool success,) = payable(owner()).call{value: address(this).balance}("");
         require(success, "Failed to withdraw");
     }
 
