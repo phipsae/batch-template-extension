@@ -1,7 +1,7 @@
 export const externalContracts = {
   10: {
     BatchRegistry: {
-      address: "0x65E42251A2ca0906c640331afd77f45F4682c56C",
+      address: "0x0",
       abi: [
         {
           inputs: [
@@ -352,7 +352,7 @@ export const externalContracts = {
       },
     },
     BatchGraduationNFT: {
-      address: "0x72A22AE8dDabA9D316Ffed3d5C0A46F7Ea8Aa809",
+      address: "0x0",
       abi: [
         {
           inputs: [

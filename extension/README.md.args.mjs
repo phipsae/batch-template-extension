@@ -1,3 +1,4 @@
+export const skipQuickStart = true
 export const extraContents = `# Welcome to your BuidlGuidl Batch!
 
 🧨 Congratulations on joining a BuidlGuidl Batch! You've completed SpeedRunEthereum and gotten your feet wet in Scaffold-ETH, Solidity coding, deploying contracts, and basic front-end development. Now it's time to take the next step on your educational journey!
